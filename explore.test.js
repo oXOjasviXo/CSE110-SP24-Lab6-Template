@@ -24,7 +24,7 @@ describe('Basic user flow for Note-taking App', () => {
       await page.click('.note'); // Click the note to edit
       await page.keyboard.press('End'); // Move cursor to end of text
       await page.keyboard.type(' - Edited'); // Type additional text
-      await page.click('#notes-app'); // Click outside the note to trigger save
+      await page.mouse.click(0, 0);  // Click outside the note to trigger save
       let editedNoteContent = await page.$eval('.note', el => el.value);
       expect(editedNoteContent).toBe('Test Note - Edited');
     });
@@ -68,4 +68,22 @@ describe('Basic user flow for Note-taking App', () => {
       let notesCountAfterDeletion = await page.$$eval('.note', notes => notes.length);
       expect(notesCountAfterDeletion).toBe(0);
     }, 20000);
+
+    it('Focused note cannot be deleted', async () => {
+        // Add a new note for testing
+        await page.click('.add-note');
+        await page.type('.note:last-child', 'Note to test focus deletion block');
+      
+        // Focus the note
+        await page.click('.note:last-child');
+      
+        // Attempt to delete the focused note by simulating a double-click
+        await page.click('.note:last-child', { clickCount: 2 });
+      
+        // Check if the note still exists
+        const noteExists = await page.$$eval('.note', notes => notes.some(note => note.value === 'Note to test focus deletion block'));
+      
+        // Expect that the note still exists (since it should not be deletable when focused)
+        expect(noteExists).toBe(true);
+      });
   });
